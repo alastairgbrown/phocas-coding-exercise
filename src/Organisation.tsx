@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Board } from './Board';
-import { GraphQLProcessor, IGraphQLResult } from './GraphQLEmulator';
+import { GraphQLProcessor, IGraphQLResult } from './GraphQLInterface';
 import { IBoard, IOrganisation } from './Interfaces';
 
 export class Organisation extends Component<{

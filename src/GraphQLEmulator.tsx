@@ -1,24 +1,9 @@
+import { operationId } from "./App";
+import { IGraphQLQuery, IGraphQLResult } from "./GraphQLInterface";
 import { IBoard, IOrganisation, ITicket } from "./Interfaces";
 import { uuidv4 } from "./Utilities";
 
-export interface IGraphQLQuery {
-    query: string
-    variables: { [id: string]: any }
-}
-export interface IGraphQLResult {
-    data: any
-    dataPresent: boolean
-    extensions: any
-}
-
-export function GraphQLProcessor(graphQLQuery: IGraphQLQuery): Promise<any> {
-
-    const processor = new Processor(ParseQuery(graphQLQuery)) as any
-
-    return Promise.resolve(processor.execute())
-}
-
-function ParseQuery(graphQLQuery: IGraphQLQuery): IGraphQLQueryNode {
+export function ParseQuery(graphQLQuery: IGraphQLQuery): IGraphQLQueryNode {
     const { query, variables } = graphQLQuery
     const parser = /[{}():,]|"(\\.|[^"])*"|[-A-Z0-9$]+!?|#.*\n/ig
     const root: IGraphQLQueryNode[] = []
@@ -63,50 +48,23 @@ function ParseQuery(graphQLQuery: IGraphQLQuery): IGraphQLQueryNode {
         }
     }
 
-    const body = root[1].children[0]
-
-    return body
+    return root[1].children[0]
 }
 
-interface IGraphQLQueryNode {
-    name: string
-    value: any
-    children: IGraphQLQueryNode[]
-    args: IGraphQLQueryNode[]
-    expectingValue?: boolean
-}
-
-interface IDatabase {
-    organisations: IOrganisation[]
-}
-
-const defaultData: IDatabase = {
-    organisations: [
-        {
-            id: '806fb7b1-64fb-4ec1-853b-f4ac7554cc64',
-            name: 'example',
-            timezone: 'Pacific/Auckland',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            boards: []
-        }
-    ]
-}
-
-class Processor {
+export class Processor {
 
     database: IDatabase
-    args: { [id: string]: string }
+    args: { [id: string]: any }
     body: IGraphQLQueryNode
 
     constructor(body: IGraphQLQueryNode) {
-        this.database = JSON.parse(window.localStorage.getItem('data') || JSON.stringify(defaultData))
+        this.database = JSON.parse(window.localStorage.getItem('data') || JSON.stringify(this.defaultDatabaseData))
         this.args = {}
         this.body = body
         body.args.forEach(a => this.args[a.name] = a.value)
     }
 
-    public execute() {
+    public execute(): IGraphQLResult {
         return (this as any)[`${this.body.name}_operation`]()
     }
 
@@ -120,6 +78,21 @@ class Processor {
 
     get board(): IBoard {
         return this.organisation.boards.find((b: any) => b.id === this.args.boardId) as IBoard
+    }
+
+    get defaultDatabaseData(): IDatabase {
+        return  {
+            organisations: [
+                {
+                    id: operationId,
+                    name: 'example',
+                    timezone: 'Pacific/Auckland',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    boards: []
+                }
+            ]
+        }
     }
 
     deleteBoard_operation(): IGraphQLResult {
@@ -199,8 +172,21 @@ class Processor {
     }
     
     resetDatabase_operation(): IGraphQLResult {
-        this.database = defaultData
+        this.database = this.defaultDatabaseData
         this.saveData()
         return { data: 'is reset', dataPresent: true, extensions: null }
     }
 }
+
+interface IGraphQLQueryNode {
+    name: string
+    value: any
+    children: IGraphQLQueryNode[]
+    args: IGraphQLQueryNode[]
+    expectingValue?: boolean
+}
+
+interface IDatabase {
+    organisations: IOrganisation[]
+}
+

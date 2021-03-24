@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Organisation } from './Organisation';
-import { GraphQLProcessor } from './GraphQLEmulator';
+import { GraphQLProcessor } from './GraphQLInterface';
 import { IBoard, ITicket } from './Interfaces';
 import { Ticket } from './Ticket';
 
@@ -29,15 +29,15 @@ export class Board extends Component<{
                 GraphQLProcessor({
                     query:
                         `mutation deleteBoard($organisationId: ID!, $boardId: ID!) {
-                    deleteBoard(organisationId: $organisationId, boardId: $boardId) {
-                        id
-                    }
-                }`,
+                            deleteBoard(organisationId: $organisationId, boardId: $boardId) {
+                                id
+                            }
+                        }`,
                     variables: {
                         organisationId: this.organisation.organisation.id,
                         boardId: this.board.id
                     }
-                }).then(() => this.organisation.requery())
+                }).then(() => this.organisation.requery())// this is the simplest way to update the state
             }
         }
         const onSave = () => {
@@ -53,10 +53,11 @@ export class Board extends Component<{
                     boardId: this.board.id,
                     input: this.board
                 }
-            }).then(() => this.organisation.requery())
+            }).then(() => this.organisation.requery())// this is the simplest way to update the state
             this.setState({ editing: false })
         }
         const update = (values: any) => {
+            // make shallow copies of arrays and objects to ensure that react updates all the state properly
             const boards = [...this.organisation.boards]
             const board = { ...this.board }
             boards[this.props.index] = { ...board, ...values }

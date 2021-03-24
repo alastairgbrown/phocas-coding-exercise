@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { GraphQLProcessor, IGraphQLQuery } from './GraphQLEmulator'
+import { GraphQLProcessor, IGraphQLQuery } from './GraphQLInterface'
 import { syntaxHighlight } from './Utilities'
 
 export class TestItem extends Component<{
@@ -21,10 +21,10 @@ export class TestItem extends Component<{
 
     public render() {
 
-        const onDoubleClick = (e: any) => this.setState({ isEditing: true })
-        const onBlur = (e: any) => this.setState({ isEditing: false })
+        const onDoubleClick = () => this.setState({ isEditing: true })
+        const onBlur = () => this.setState({ isEditing: false })
         const onChange = (e: any) => this.setState({ variables: (e.target as any).value })
-        const onClick = (e: any) => {
+        const onClick = () => {
             GraphQLProcessor({ ...this.query, variables: JSON.parse(this.state.variables) })
                 .then(result => this.setState({ result }))
         }

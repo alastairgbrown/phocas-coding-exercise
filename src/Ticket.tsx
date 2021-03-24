@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Board } from './Board';
 import { Organisation } from './Organisation';
-import { GraphQLProcessor } from './GraphQLEmulator';
+import { GraphQLProcessor } from './GraphQLInterface';
 import { ITicket } from './Interfaces';
 
 export class Ticket extends Component<{
@@ -34,7 +34,7 @@ export class Ticket extends Component<{
                         organisationId: this.organisation.organisation.id,
                         ticketId: this.ticket.id
                     }
-                }).then(() => this.organisation.requery())
+                }).then(() => this.organisation.requery())// this is the simplest way to update the state
             }
         }
         const onSave = () => {
@@ -51,11 +51,12 @@ export class Ticket extends Component<{
                     ticketId: this.ticket.id,
                     input: this.ticket
                 }
-            }).then(() => this.organisation.requery())
+            }).then(() => this.organisation.requery())// this is the simplest way to update the state
             this.setState({ editing: false })
         }
 
         const update = (values: any) => {
+            // make shallow copies of arrays and objects to ensure that react updates all the state properly
             const boards = [...this.props.board.props.organisation.boards]
             const board = this.props.board.board
             const tickets = [...board.tickets]
